@@ -1,6 +1,7 @@
 package partitioning.tool.kafka.consumer;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
@@ -11,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import partitioning.tool.kafka.common.PropertiesLoader;
 
 public class ConsumerStarter {
+
+    private static final List<String> NAME_PREFIX = List.of("APE", "BAT", "BEE", "CAT", "DOG", "GNU", "PIG", "RAT");
+
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerStarter.class);
 
     public static void main(final String[] args) throws IOException {
@@ -57,12 +61,11 @@ public class ConsumerStarter {
     public static String generateRandomId() {
         int leftLimit = 97; // letter 'a'
         int rightLimit = 122; // letter 'z'
-        int targetStringLength = 5;
         Random random = new Random();
 
-        return random.ints(leftLimit, rightLimit + 1)
-                .limit(targetStringLength)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
+        final String prefix = NAME_PREFIX.get(random.nextInt(NAME_PREFIX.size()));
+        final char letter = (char) (leftLimit + random.nextInt(rightLimit + 1 - leftLimit));
+
+        return prefix + "-" + letter + letter + letter + letter + letter;
     }
 }
