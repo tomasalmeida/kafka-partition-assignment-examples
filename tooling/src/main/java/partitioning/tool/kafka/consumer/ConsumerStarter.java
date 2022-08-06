@@ -1,22 +1,19 @@
 package partitioning.tool.kafka.consumer;
 
+import java.io.IOException;
+import java.util.Properties;
+import java.util.Random;
+
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import partitioning.tool.kafka.common.PropertiesLoader;
 
-import java.io.IOException;
-import java.util.Properties;
-import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-
 public class ConsumerStarter {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerStarter.class);
 
-    public static void main(final String[] args) throws IOException, InterruptedException {
+    public static void main(final String[] args) throws IOException {
         if (args.length != 5) {
             System.err.println("Required parameters: <config-file> <group-id> <topic-pattern> <delay-per-polling-in-ms> <strategyClass>");
             return;
@@ -34,27 +31,27 @@ public class ConsumerStarter {
         properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, partitionStrategy);
         properties.put(ConsumerConfig.CLIENT_ID_CONFIG, generateRandomId());
 
-        final Consumer myConsumer = new Consumer(properties, topicPattern, delay);
+        final Consumer consumer = new Consumer(properties, topicPattern, delay);
 
         // get a reference to the current thread
         final Thread mainThread = Thread.currentThread();
 
         // Adding a shutdown hook to clean up when the application exits
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                LOG.info("Detected a shutdown, let's exit by calling closing the consumer...");
-                myConsumer.close();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> stopConsumerBeforeExit(consumer, mainThread)));
 
-                // join the main thread to allow the execution of the code in the main thread
-                try {
-                    mainThread.join();
-                } catch (InterruptedException e) {
-                    LOG.error("Oh man...", e);
-                }
-            }
-        });
+        consumer.run();
+    }
 
-        myConsumer.run();
+    private static void stopConsumerBeforeExit(final Consumer consumer, final Thread mainThread) {
+        LOG.info("Detected a shutdown, let's exit by calling closing the consumer...");
+        consumer.wakeUp();
+
+        // join the main thread to give time to consumer to close correctly
+        try {
+            mainThread.join();
+        } catch (InterruptedException e) {
+            LOG.error("Oh man...", e);
+        }
     }
 
     public static String generateRandomId() {

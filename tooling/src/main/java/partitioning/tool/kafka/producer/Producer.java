@@ -1,15 +1,15 @@
 package partitioning.tool.kafka.producer;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Properties;
+import java.util.Random;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Properties;
-import java.util.Random;
 
 public class Producer {
 
@@ -32,18 +32,26 @@ public class Producer {
     public void run() {
         int sentMessages = 0;
         int topicId = 0;
+
         while (shouldSendMessages(sentMessages)) {
-            final int key = random.nextInt();
-            final String message = generateMessage();
-            final ProducerRecord<Integer, String> record = new ProducerRecord<>(topics[topicId], key, message);
-            LOG.info("Sending message [{}] - [{}] sent to topic [{}]",record.key(), record.value(), record.topic());
+            final ProducerRecord<Integer, String> record = generateNextMessageForTopic(topicId);
+
+            LOG.info("Sending message [{}] - [{}] sent to topic [{}]", record.key(), record.value(), record.topic());
             producer.send(record, this::logMessageSent);
+
             waitUntilDurationExpires();
+
             if (totalMessages != NEVER_STOP) {
                 sentMessages++;
             }
             topicId = (topicId + 1) % topics.length;
         }
+    }
+
+    private ProducerRecord<Integer, String> generateNextMessageForTopic(final int topicId) {
+        final int key = random.nextInt();
+        final String message = generateMessageValue();
+        return new ProducerRecord<>(topics[topicId], key, message);
     }
 
     public void close() {
@@ -67,7 +75,7 @@ public class Producer {
         }
     }
 
-    private String generateMessage() {
+    private String generateMessageValue() {
         return "Generated at " + LocalDateTime.now();
     }
 

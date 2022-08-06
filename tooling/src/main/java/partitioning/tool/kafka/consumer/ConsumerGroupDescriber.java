@@ -2,7 +2,14 @@ package partitioning.tool.kafka.consumer;
 
 import static java.util.stream.Collectors.toMap;
 
-import partitioning.tool.kafka.common.PropertiesLoader;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
@@ -15,15 +22,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+import partitioning.tool.kafka.common.PropertiesLoader;
 
 public class ConsumerGroupDescriber {
 
@@ -41,7 +40,7 @@ public class ConsumerGroupDescriber {
 
         final Map<TopicPartition, OffsetSpec> endOffsets = getEndOffsets(consumerGroup, adminClient)
                 .get();
-        
+
         final ListOffsetsOptions readOptions = getReadOptionWithTimeout();
 
         while (true) {
@@ -72,7 +71,7 @@ public class ConsumerGroupDescriber {
                     .thenApply(ConsumerGroupDescription::members)
                     .get();
 
-            for(MemberDescription membersDescription : membersDescriptions) {
+            for (MemberDescription membersDescription : membersDescriptions) {
                 System.out.println("clientId = " + membersDescription.clientId()
                         + "\t\tASSIGNMENT = " + getAllAssignments(membersDescription.assignment())
                 );
@@ -95,7 +94,7 @@ public class ConsumerGroupDescriber {
                 .collect(Collectors.joining(" "));
     }
 
-    private static KafkaFuture<Map<TopicPartition, OffsetSpec>> getEndOffsets(final String consumerGroup, final AdminClient adminClient) throws InterruptedException, ExecutionException {
+    private static KafkaFuture<Map<TopicPartition, OffsetSpec>> getEndOffsets(final String consumerGroup, final AdminClient adminClient) {
         return adminClient.listConsumerGroupOffsets(consumerGroup)
                 .partitionsToOffsetAndMetadata()
                 .thenApply(ConsumerGroupDescriber::createPartitionLatestOffsetMap);

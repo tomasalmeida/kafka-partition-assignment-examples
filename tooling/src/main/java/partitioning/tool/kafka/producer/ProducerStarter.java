@@ -1,10 +1,10 @@
 package partitioning.tool.kafka.producer;
 
-import partitioning.tool.kafka.common.PropertiesLoader;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Properties;
+
+import partitioning.tool.kafka.common.PropertiesLoader;
 
 public class ProducerStarter {
 
@@ -16,9 +16,8 @@ public class ProducerStarter {
 
         // load configs
         final Properties properties = PropertiesLoader.load(args[0]);
-        final Duration delay = Duration.ofMillis(Integer.parseInt(args[1])) ;
+        final Duration delay = Duration.ofMillis(Integer.parseInt(args[1]));
         String[] topics = args[2].split(",");
-
 
         final Producer myProducer = new Producer(properties, topics, Producer.NEVER_STOP, delay);
 
