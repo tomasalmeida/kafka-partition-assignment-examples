@@ -65,6 +65,7 @@ echo "Extra launched [${LAST_CONSUMER}]"
 
 echo -n "> Confirm kill extra consumer. [Press any key]"
 read
+echo kill -13 $LAST_CONSUMER
 kill $LAST_CONSUMER
 echo ">> killed $LAST_CONSUMER"
 

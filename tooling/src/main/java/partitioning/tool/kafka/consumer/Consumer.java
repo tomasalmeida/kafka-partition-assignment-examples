@@ -10,7 +10,7 @@ import java.time.Duration;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-public class Consumer {
+public class Consumer{
     private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
     private final KafkaConsumer consumer;
     private final String topicPattern;
@@ -22,7 +22,7 @@ public class Consumer {
         this.delay = delay;
     }
 
-    public void run() throws InterruptedException {
+    public void run() {
         try {
             Pattern compile = Pattern.compile(topicPattern);
             consumer.subscribe(compile);
@@ -34,8 +34,11 @@ public class Consumer {
                 }
                 Thread.sleep(delay);
             }
+        } catch (InterruptedException e) {
+            LOG.error("Woke up by", e);
         } finally {
-            LOG.error("Closing echo consumer for topicPattern [{}]", topicPattern);
+            consumer.close();
+            LOG.error("Closed echo consumer for topicPattern [{}]", topicPattern);
         }
     }
 

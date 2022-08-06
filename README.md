@@ -1,6 +1,11 @@
-# Partition assignmenent example
+# Partition assignment example
 
 See the behavior of the partition assignment in different configuration
+
+## Pre-requisites
+* docker-compose
+* [Confluent CLI](https://docs.confluent.io/platform/current/installation/installing_cp/zip-tar.html)
+* watch command
 
 ## How to run
 
