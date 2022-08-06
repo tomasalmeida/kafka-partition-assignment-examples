@@ -1,6 +1,4 @@
-package partitioning.tool.kafka.consumer;
-
-import static java.util.stream.Collectors.toMap;
+package partitioning.tool.kafka.admin;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -13,13 +11,9 @@ import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
-import org.apache.kafka.clients.admin.ListOffsetsOptions;
-import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.MemberAssignment;
 import org.apache.kafka.clients.admin.MemberDescription;
-import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 
 import partitioning.tool.kafka.common.PropertiesLoader;
@@ -32,16 +26,13 @@ public class ConsumerGroupDescriber {
             return;
         }
 
-        // load configs
+        // load args
         final Properties properties = PropertiesLoader.load(args[0]);
         final String consumerGroup = args[1];
 
         AdminClient adminClient = AdminClient.create(properties);
 
-        final Map<TopicPartition, OffsetSpec> endOffsets = getEndOffsets(consumerGroup, adminClient)
-                .get();
-
-        final ListOffsetsOptions readOptions = getReadOptionWithTimeout();
+        OffsetTopicsDescriber offsetTopicsDescriber = new OffsetTopicsDescriber(adminClient, consumerGroup);
 
         while (true) {
             System.out.print("\033[H\033[2J");
@@ -51,13 +42,12 @@ public class ConsumerGroupDescriber {
                     .partitionsToOffsetAndMetadata()
                     .get();
 
-            final Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> endOffsetsMap = adminClient.listOffsets(endOffsets, readOptions)
-                    .all()
-                    .get();
+            offsetTopicsDescriber.refreshValues();
 
-            System.out.println(LocalDateTime.now());
+            System.out.println("Date: " + LocalDateTime.now() + "\n");
+
             for (var partition : groupOffsets.keySet()) {
-                final long endOffset = endOffsetsMap.get(partition).offset();
+                final long endOffset = offsetTopicsDescriber.getOffsetOrDefault(partition, -1L);
                 System.out.println("Topic " + partition.topic()
                         + "\t\tpartition = " + partition.partition()
                         + "\t\tcurrentOffset = " + groupOffsets.get(partition).offset()
@@ -92,25 +82,6 @@ public class ConsumerGroupDescriber {
                 .stream()
                 .map(entry -> entry.getKey() + "(" + entry.getValue() + ")")
                 .collect(Collectors.joining(" "));
-    }
-
-    private static KafkaFuture<Map<TopicPartition, OffsetSpec>> getEndOffsets(final String consumerGroup, final AdminClient adminClient) {
-        return adminClient.listConsumerGroupOffsets(consumerGroup)
-                .partitionsToOffsetAndMetadata()
-                .thenApply(ConsumerGroupDescriber::createPartitionLatestOffsetMap);
-    }
-
-    private static Map<TopicPartition, OffsetSpec> createPartitionLatestOffsetMap(final Map<TopicPartition, OffsetAndMetadata> groupOffsets) {
-        final Map<TopicPartition, OffsetSpec> endOffsets = groupOffsets.keySet()
-                .stream()
-                .collect(toMap(topicPartition -> topicPartition, topicPartition -> OffsetSpec.latest()));
-        return endOffsets;
-    }
-
-    private static ListOffsetsOptions getReadOptionWithTimeout() {
-        final ListOffsetsOptions readOptions = new ListOffsetsOptions();
-        readOptions.timeoutMs(100);
-        return readOptions;
     }
 
     private static void waitHalfSecond() {

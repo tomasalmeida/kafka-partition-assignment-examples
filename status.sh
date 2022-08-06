@@ -13,4 +13,4 @@ CONSUMER_GROUP=$1
 #           kafka-consumer-groups --bootstrap-server localhost:29092 --group $CONSUMER_GROUP --describe --offsets --verbose"
 
 cd tooling
-java -cp  target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar  partitioning.tool.kafka.consumer.ConsumerGroupDescriber config.properties $CONSUMER_GROUP
+java -cp  target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar  partitioning.tool.kafka.admin.ConsumerGroupDescriber config.properties $CONSUMER_GROUP

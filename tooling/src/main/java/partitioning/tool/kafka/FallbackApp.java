@@ -1,6 +1,6 @@
 package partitioning.tool.kafka;
 
-import partitioning.tool.kafka.consumer.ConsumerGroupDescriber;
+import partitioning.tool.kafka.admin.ConsumerGroupDescriber;
 import partitioning.tool.kafka.consumer.ConsumerStarter;
 import partitioning.tool.kafka.producer.ProducerStarter;
 
