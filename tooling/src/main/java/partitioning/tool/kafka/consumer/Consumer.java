@@ -32,6 +32,7 @@ public class Consumer {
                     LOG.debug("value = [{}], timestamp = [{}], partition = [{}]",
                             record.value(), record.timestamp(), record.partition());
                 }
+                consumer.commitAsync();
                 Thread.sleep(delay);
             }
         } catch (InterruptedException e) {
