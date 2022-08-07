@@ -35,18 +35,20 @@ public class ConsumerGroupStatus {
             partitionAssignmentDescriber.refreshValues();
 
             System.out.println("Date: " + LocalDateTime.now() + " - consumerGroup: " + consumerGroup + "\n");
-            System.out.println("Topic\t\tPartition\tcurrentOffset\tendOffset\tclientId");
+            System.out.println("Topic\t\tPartition\tcurrent Offset\tend Offset\tClient Id\tinstanceId");
             for (var partition : offsetTopicsDescriber.getAllTopicsPartitions()) {
 
                 final long currentOffset = offsetTopicsDescriber.getCurrentOffsetOrDefault(partition, -1L);
                 final long endOffset = offsetTopicsDescriber.getEndOffsetOrDefault(partition, -1L);
-                final String clientId = partitionAssignmentDescriber.getClientIdOrDefault(partition, "NOT_ASSIGNED");
+                final String clientId = partitionAssignmentDescriber.getClientId(partition);
+                final String instanceId = partitionAssignmentDescriber.getInstanceId(partition);
 
                 System.out.println(partition.topic()
                         + "\t\t" + partition.partition()
                         + "\t\t" + currentOffset
                         + "\t\t" + endOffset
                         + "\t\t" + clientId
+                        + "\t" + instanceId
                 );
             }
             System.out.println(partitionAssignmentDescriber.printAssignment());

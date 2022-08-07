@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.admin.AdminClient;
@@ -18,21 +19,34 @@ import partitioning.tool.kafka.admin.TopicPartitionComparator;
 public class PartitionAssignmentDescriber {
     private final String consumerGroup;
     private final AdminClient adminClient;
-    private Map<TopicPartition, String> topicAssignmentMap;
-    private Map<String, String> clientPartitionAssignment;
+    private Map<TopicPartition, ClientDetails> clientDetailsPerPartitionMap;
+    private Map<String, String> assignedPartitionsPerClient;
 
     public PartitionAssignmentDescriber(final AdminClient adminClient, final String consumerGroup) {
         this.adminClient = adminClient;
         this.consumerGroup = consumerGroup;
     }
 
-    public String getClientIdOrDefault(final TopicPartition topicPartition, final String defaultValue) {
-        return topicAssignmentMap.getOrDefault(topicPartition, defaultValue);
+    public String getClientId(final TopicPartition topicPartition) {
+        return getProperty(topicPartition, ClientDetails::getClientId);
+    }
+
+    public String getInstanceId(final TopicPartition topicPartition) {
+        return getProperty(topicPartition, ClientDetails::getInstanceId);
+    }
+
+    private String getProperty(final TopicPartition topicPartition, Function<ClientDetails, String> getter) {
+        String id = null;
+        if (clientDetailsPerPartitionMap.containsKey(topicPartition)) {
+            final ClientDetails clientDetails = clientDetailsPerPartitionMap.get(topicPartition);
+            id = getter.apply(clientDetails);
+        }
+        return id != null ? id : "NOT_ASSIGNED";
     }
 
     public String printAssignment() {
         return "\nCLIENT\t\tPARTITIONS\n" +
-                clientPartitionAssignment.entrySet()
+                assignedPartitionsPerClient.entrySet()
                         .stream()
                         .map(entry -> entry.getKey() + "\t" + entry.getValue())
                         .collect(Collectors.joining("\n"));
@@ -45,11 +59,11 @@ public class PartitionAssignmentDescriber {
                 .thenApply(ConsumerGroupDescription::members)
                 .get();
 
-        topicAssignmentMap = mapTopicsToMember(memberDescriptions);
-        clientPartitionAssignment = mapClientsToPartitions(memberDescriptions);
+        clientDetailsPerPartitionMap = mapPartitionToClientDetails(memberDescriptions);
+        assignedPartitionsPerClient = getAllPartitionAssignedPerClientId(memberDescriptions);
     }
 
-    private Map<String, String> mapClientsToPartitions(final Collection<MemberDescription> memberDescriptions) {
+    private Map<String, String> getAllPartitionAssignedPerClientId(final Collection<MemberDescription> memberDescriptions) {
         Map<String, String> clientMappings = new HashMap<>();
 
         for (MemberDescription memberDescription : memberDescriptions) {
@@ -74,15 +88,30 @@ public class PartitionAssignmentDescriber {
                 .collect(Collectors.joining(" "));
     }
 
-    private Map<TopicPartition, String> mapTopicsToMember(final Collection<MemberDescription> memberDescriptions) {
-        Map<TopicPartition, String> topicPartitionMap = new HashMap<>();
+    private Map<TopicPartition, ClientDetails> mapPartitionToClientDetails(final Collection<MemberDescription> memberDescriptions) {
+        Map<TopicPartition, ClientDetails> clientDataPerPartition = new HashMap<>();
         for (MemberDescription memberDescription : memberDescriptions) {
-            final String clientId = memberDescription.clientId();
+            final ClientDetails clientDetails = new ClientDetails();
+            clientDetails.clientId = memberDescription.clientId();
+            clientDetails.instanceId = memberDescription.groupInstanceId().orElse(null);
             memberDescription
                     .assignment()
                     .topicPartitions()
-                    .forEach(topicPartition -> topicPartitionMap.put(topicPartition, clientId));
+                    .forEach(topicPartition -> clientDataPerPartition.put(topicPartition, clientDetails));
         }
-        return topicPartitionMap;
+        return clientDataPerPartition;
+    }
+
+    private static class ClientDetails {
+        String clientId;
+        String instanceId;
+
+        public String getClientId() {
+            return clientId;
+        }
+
+        public String getInstanceId() {
+            return instanceId;
+        }
     }
 }

@@ -18,7 +18,7 @@ public class ConsumerStarter {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerStarter.class);
 
     public static void main(final String[] args) throws IOException {
-        if (args.length != 5) {
+        if (args.length < 5) {
             System.err.println("Required parameters: <config-file> <group-id> <topic-pattern> <delay-per-polling-in-ms> <strategyClass>");
             return;
         }
@@ -34,6 +34,7 @@ public class ConsumerStarter {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, partitionStrategy);
         properties.put(ConsumerConfig.CLIENT_ID_CONFIG, generateRandomId());
+        configureInstanceIdIfPresent(properties, args);
 
         final Consumer consumer = new Consumer(properties, topicPattern, delay);
 
@@ -44,6 +45,13 @@ public class ConsumerStarter {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> stopConsumerBeforeExit(consumer, mainThread)));
 
         consumer.run();
+    }
+
+    private static void configureInstanceIdIfPresent(final Properties properties, final String[] args) {
+        if (args.length == 6) {
+            final String instanceId = args[5];
+            properties.put(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, instanceId);
+        }
     }
 
     private static void stopConsumerBeforeExit(final Consumer consumer, final Thread mainThread) {
