@@ -102,3 +102,6 @@ Example:
 2. Run
 
     docker-compose down -v
+
+# References:
+- https://medium.com/streamthoughts/understanding-kafka-partition-assignment-strategies-and-how-to-write-your-own-custom-assignor-ebeda1fc06f3
