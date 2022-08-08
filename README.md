@@ -10,14 +10,40 @@ See the behavior of the partition assignment in different configuration
 
 ### 1. Producer
 
-In one terminal, start the cluster and produce:
+In one terminal, start the cluster and producer (you will be asked some questions):
 
-     ./launch-producer.sh <number of topics> <partitions per topic>
+     ./launch-producer.sh
 
 
 Example:
 
-      ./launch-producer.sh 4 3
+      ./launch-producer.sh
+      [+] Running 3/3
+      ⠿ Network kafka-partition-assignment-examples_default  Created                <-- cluster being started                                                                                                                      0.0s
+      ⠿ Container zookeeper                                  Started                                                                                                                                      0.4s
+      ⠿ Container broker                                     Started                                                                                                                                      0.7s
+      
+      Should I create a new topic? [y/n]: y
+      How many partitions? 1
+      Created topic topic-0.
+      
+      Should I create a new topic? [y/n]: y
+      How many partitions? 3
+      Created topic topic-1.
+      
+      Should I create a new topic? [y/n]: y
+      How many partitions? NaN
+      error: 'NaN' is not a valid number
+      Start again :-(
+      
+      Should I create a new topic? [y/n]: y
+      How many partitions? 2
+      Created topic topic-2.
+      
+      Should I create a new topic? [y/n]: n
+      all topics = topic-0,topic-1,topic-2
+      
+      ... # producer will be started
 
 ### 2. Status
 In another terminal, check the status
