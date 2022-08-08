@@ -48,6 +48,7 @@ public class PartitionAssignmentDescriber {
         return "\nCLIENT\t\tPARTITIONS\n" +
                 assignedPartitionsPerClient.entrySet()
                         .stream()
+                        .sorted(Map.Entry.comparingByKey())
                         .map(entry -> entry.getKey() + "\t" + entry.getValue())
                         .collect(Collectors.joining("\n"));
     }

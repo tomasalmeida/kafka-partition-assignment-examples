@@ -5,22 +5,20 @@ show_help() {
   echo "   Strategy can be: round, range, sticky, coop"
   echo "   number of first consumers"
   echo "   consumer group"
-  echo "   instance id assignment: true (false by default)"
+  echo "   instance id assignment: true/false (false by default)"
   echo ""
   echo "$0 <strategy> <number-of-consumers> <consumer-group> <instanceId-assignment>"
 }
 
 launch_consumer() {
   ID=$1
-  if [ "$STATIC_INSTANCE" = 'true' ]; then
-      INSTANCE="consumer-${ID}";
-    fi
-    java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
-          partitioning.tool.kafka.consumer.ConsumerStarter \
-          config.properties $GROUP_ID "topic-.*" 30 \
-          $STRATEGY_CLASS $INSTANCE &>/dev/null &
-    consumers[$ID]=$!
-    echo "consumer-$ID launched [${consumers[$ID]}]"
+  INSTANCE="consumer-${ID}";
+  java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
+        partitioning.tool.kafka.consumer.ConsumerStarter \
+        config.properties $GROUP_ID  \
+        $STRATEGY_CLASS $INSTANCE $SET_STATIC &>/dev/null &
+  consumers[$ID]=$!
+  echo "consumer-$ID launched [${consumers[$ID]}]"
 }
 
 kill_consumer() {
@@ -52,8 +50,8 @@ esac
 
 TOTAL_CONSUMERS=$2
 GROUP_ID=$3
-STATIC_INSTANCE=`echo $4 | tr  'A-Z' 'a-z'`
-
+SET_STATIC=`echo $4 | tr  'A-Z' 'a-z'`
+SET_STATIC=${SET_STATIC:='false'}
 cd tooling
 
 declare -a consumers

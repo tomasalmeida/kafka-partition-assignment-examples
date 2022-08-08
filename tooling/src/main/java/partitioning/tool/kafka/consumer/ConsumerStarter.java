@@ -16,27 +16,30 @@ public class ConsumerStarter {
     private static final List<String> NAME_PREFIX = List.of("APE", "BAT", "BEE", "CAT", "DOG", "GNU", "PIG", "RAT");
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerStarter.class);
+    private static String TOPIC_PATTERN = "topic-.*";
 
     public static void main(final String[] args) throws IOException {
         if (args.length < 5) {
-            System.err.println("Required parameters: <config-file> <group-id> <topic-pattern> <delay-per-polling-in-ms> <strategyClass>");
+            System.err.println("Required parameters: <config-file> <group-id> <strategyClass> <static-assignment>");
             return;
         }
 
         // load configs
         final Properties properties = PropertiesLoader.load(args[0]);
         String groupId = args[1];
-        final String topicPattern = args[2];
-        final int delay = Integer.parseInt(args[3]);
-        final String partitionStrategy = args[4];
+        final String partitionStrategy = args[2];
+        final String instanceId = args[3];
+        final boolean setStatic = Boolean.parseBoolean(args[4]);
 
         // extra configs
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, partitionStrategy);
-        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, generateRandomId());
-        configureInstanceIdIfPresent(properties, args);
+        properties.put(ConsumerConfig.CLIENT_ID_CONFIG, instanceId);
+        if (setStatic) {
+            properties.put(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, instanceId);
+        }
 
-        final Consumer consumer = new Consumer(properties, topicPattern, delay);
+        final Consumer consumer = new Consumer(properties, TOPIC_PATTERN, 30);
 
         // get a reference to the current thread
         final Thread mainThread = Thread.currentThread();
@@ -45,13 +48,6 @@ public class ConsumerStarter {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> stopConsumerBeforeExit(consumer, mainThread)));
 
         consumer.run();
-    }
-
-    private static void configureInstanceIdIfPresent(final Properties properties, final String[] args) {
-        if (args.length == 6) {
-            final String instanceId = args[5];
-            properties.put(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, instanceId);
-        }
     }
 
     private static void stopConsumerBeforeExit(final Consumer consumer, final Thread mainThread) {
