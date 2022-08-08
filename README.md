@@ -15,12 +15,16 @@ In one terminal, start the cluster and produce:
      ./launch-producer.sh <number of topics> <partitions per topic>
 
 
+Example:
+
+      ./launch-producer.sh 4 3
+
 ### 2. Status
 In another terminal, check the status
 
     ./status.sh <consumer-group>
 
-Example of output
+Example:
 
       ./status.sh beta1
 
@@ -71,7 +75,7 @@ Strategies can be:
 
 `static-assignment` can be true or false (false by default) (timeout is 10 seconds)
 
-Example of output
+Example:
 
       ./launch-consumer.sh coop 0 beta1 true
       
