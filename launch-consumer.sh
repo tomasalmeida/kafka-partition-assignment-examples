@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+REGEX_NUMBER='^[0-9]+$'
+
 show_help() {
   echo "Provide"
   echo "   Strategy can be: round, range, sticky, coop"
@@ -12,11 +14,11 @@ show_help() {
 
 launch_consumer() {
   ID=$1
-  INSTANCE="consumer-${ID}";
+  INSTANCE="consumer-${ID}"
   java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
-        partitioning.tool.kafka.consumer.ConsumerStarter \
-        config.properties $GROUP_ID  \
-        $STRATEGY_CLASS $INSTANCE $SET_STATIC &>/dev/null &
+    partitioning.tool.kafka.consumer.ConsumerStarter \
+    config.properties $GROUP_ID \
+    $STRATEGY_CLASS $INSTANCE $SET_STATIC &>/dev/null &
   consumers[$ID]=$!
   echo "consumer-$ID launched [${consumers[$ID]}]"
 }
@@ -24,38 +26,47 @@ launch_consumer() {
 kill_consumer() {
   ID=$1
   PID="${consumers[ID]}"
+  if [[ PID -gt 0 ]]; then
     kill $PID
-    echo "Consumer $ID killed (pid $PID) - Date: `date`"
+    echo "Consumer $ID killed (pid $PID) - Date: $(date)"
+    consumers[$ID]=0
+  else
+    echo "No pid found for consumer $ID."
+  fi
 }
 
-if [[ $# -lt 3 ]] ; then
-    show_help
-    exit 0
+if [[ $# -lt 3 ]]; then
+  show_help
+  exit 0
 fi
 
 case "$1" in
-   "round") STRATEGY_CLASS="org.apache.kafka.clients.consumer.RoundRobinAssignor"
-   ;;
-   "range") STRATEGY_CLASS="org.apache.kafka.clients.consumer.RangeAssignor"
-   ;;
-   "sticky") STRATEGY_CLASS="org.apache.kafka.clients.consumer.StickyAssignor"
-   ;;
-   "coop") STRATEGY_CLASS="org.apache.kafka.clients.consumer.CooperativeStickyAssignor"
-   ;;
-   *)
-     echo "Strategy not recognised"
-     exit 1
-   ;;
+"round")
+  STRATEGY_CLASS="org.apache.kafka.clients.consumer.RoundRobinAssignor"
+  ;;
+"range")
+  STRATEGY_CLASS="org.apache.kafka.clients.consumer.RangeAssignor"
+  ;;
+"sticky")
+  STRATEGY_CLASS="org.apache.kafka.clients.consumer.StickyAssignor"
+  ;;
+"coop")
+  STRATEGY_CLASS="org.apache.kafka.clients.consumer.CooperativeStickyAssignor"
+  ;;
+*)
+  echo "Strategy not recognised"
+  exit 1
+  ;;
 esac
 
 TOTAL_CONSUMERS=$2
 GROUP_ID=$3
-SET_STATIC=`echo $4 | tr  'A-Z' 'a-z'`
+SET_STATIC=$(echo $4 | tr 'A-Z' 'a-z')
 SET_STATIC=${SET_STATIC:='false'}
 cd tooling
 
 declare -a consumers
-for (( i=0; i<TOTAL_CONSUMERS; i++)); do
+for ((i = 0; i < TOTAL_CONSUMERS; i++)); do
   launch_consumer $i
 done
 
@@ -66,28 +77,29 @@ while [ "$action_letter" != "e" ]; do
   echo ""
 
   case "$action_letter" in
-     "a")
-        launch_consumer $TOTAL_CONSUMERS
-        let TOTAL_CONSUMERS++
-     ;;
-     "k")
-        if [[ $TOTAL_CONSUMERS -le 0 ]] ; then
-            echo "No active consumers to kill"
-        else
-          let TOTAL_CONSUMERS--
-          kill_consumer $TOTAL_CONSUMERS
-        fi
-     ;;
-     "e")
-        echo "Time to clean up!"
-      ;;
-     *)
-       echo "Command not recognised!"
-     ;;
+  "a")
+    launch_consumer $TOTAL_CONSUMERS
+    let TOTAL_CONSUMERS++
+    ;;
+  "k")
+    echo -n "Give the consumer number you want to kill:  "
+    read ID
+    if [[ $ID =~ $REGEX_NUMBER ]]; then
+      kill_consumer $ID
+    else
+      echo "Not a number to me :-("
+    fi
+    ;;
+  "e")
+    echo "Time to clean up!"
+    ;;
+  *)
+    echo "Command not recognised!"
+    ;;
   esac
 
 done
 
-for (( i=0; i<TOTAL_CONSUMERS; i++)); do
+for ((i = 0; i < TOTAL_CONSUMERS; i++)); do
   kill_consumer $i
 done
