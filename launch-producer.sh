@@ -15,9 +15,9 @@ while [ "$CREATE_TOPIC" != "n" ]; do
   if [ "$CREATE_TOPIC" == "y" ]; then
     echo -n "How many partitions? "
     read PARTITIONS
-    if ! [[ $PARTITIONS -gt 0 ]] ; then
-       echo "error: '$PARTITIONS' is not a valid number" >&2;
-       echo "Start again :-(" >&2;
+    if ! [[ $PARTITIONS -gt 0 ]]; then
+      echo "error: '$PARTITIONS' is not a valid number" >&2
+      echo "Start again :-(" >&2
     else
       TOPIC_NAME="$TOPIC_PREFIX-$TOPIC"
       ALL_TOPICS+=($TOPIC_NAME)
@@ -28,16 +28,14 @@ while [ "$CREATE_TOPIC" != "n" ]; do
     fi
   fi
 done
-ALL_TOPICS=`echo ${ALL_TOPICS[@]} | tr ' ' ','`
+ALL_TOPICS=$(echo ${ALL_TOPICS[@]} | tr ' ' ',')
 echo "all topics = $ALL_TOPICS"
 
 cd tooling
 mvn clean package
 java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar partitioning.tool.kafka.producer.ProducerStarter config.properties 10 "$ALL_TOPICS"
 
-
 echo "***********************************"
 echo "* REMEMBER TO DESTROY THE CLUSTER *"
 echo " >>>  docker-compose down -v  <<< *"
 echo "***********************************"
-
