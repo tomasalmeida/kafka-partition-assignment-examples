@@ -14,6 +14,7 @@ In one terminal, start the cluster and producer (you will be asked some question
 
      ./launch-producer.sh
 
+> For each tipic, we will feed it with 600000 records, so it can take some time :-) 
 
 Example:
 
