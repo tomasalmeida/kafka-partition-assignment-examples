@@ -26,11 +26,12 @@ public class OffsetTopicsDescriber {
     private final String consumerGroup;
     private final ListOffsetsOptions readOptions;
     private ListOffsetsResult futureEndOffsetPerPartition;
-    private Map<TopicPartition, OffsetAndMetadata> metadataPerPartition;
+    private Map<TopicPartition, OffsetAndMetadata> metadataPerPartitionForConsumerGroup;
 
     /**
      * get offset info of topics from a given consumer group
-     * @param adminClient admin client
+     *
+     * @param adminClient   admin client
      * @param consumerGroup some user group
      * @throws ExecutionException
      * @throws InterruptedException
@@ -43,10 +44,12 @@ public class OffsetTopicsDescriber {
     }
 
     public void refreshValues() throws ExecutionException, InterruptedException {
-        final KafkaFuture<Map<TopicPartition, OffsetAndMetadata>> partitionMetadata = getPartitionMetadata();
-        final Map<TopicPartition, OffsetSpec> topicsWithOptionLatest = createMapInputForTopicsCheck(partitionMetadata);
+        final KafkaFuture<Map<TopicPartition, OffsetAndMetadata>> partitionMetadataForConsumerGroup = adminClient
+                .listConsumerGroupOffsets(consumerGroup)
+                .partitionsToOffsetAndMetadata();
+        final Map<TopicPartition, OffsetSpec> topicsWithOptionLatest = createMapInputForTopicsCheck(partitionMetadataForConsumerGroup);
         futureEndOffsetPerPartition = adminClient.listOffsets(topicsWithOptionLatest, readOptions);
-        metadataPerPartition = partitionMetadata.get();
+        metadataPerPartitionForConsumerGroup = partitionMetadataForConsumerGroup.get();
     }
 
     public long getEndOffsetOrDefault(TopicPartition topicPartition, final long defaultValue) {
@@ -61,15 +64,15 @@ public class OffsetTopicsDescriber {
     }
 
     public List<TopicPartition> getAllTopicsPartitions() {
-        return metadataPerPartition.keySet()
+        return metadataPerPartitionForConsumerGroup.keySet()
                 .stream()
                 .sorted(new TopicPartitionComparator())
                 .collect(Collectors.toList());
     }
 
     public long getCurrentOffsetOrDefault(final TopicPartition topicPartition, final long defaultValue) {
-        if (metadataPerPartition.containsKey(topicPartition)) {
-            return metadataPerPartition.get(topicPartition).offset();
+        if (metadataPerPartitionForConsumerGroup.containsKey(topicPartition)) {
+            return metadataPerPartitionForConsumerGroup.get(topicPartition).offset();
         }
         return defaultValue;
     }
@@ -78,11 +81,6 @@ public class OffsetTopicsDescriber {
         return partitionMetadata
                 .thenApply(this::createPartitionLatestOffsetMap)
                 .get();
-    }
-
-    private KafkaFuture<Map<TopicPartition, OffsetAndMetadata>> getPartitionMetadata() {
-        return adminClient.listConsumerGroupOffsets(consumerGroup)
-                .partitionsToOffsetAndMetadata();
     }
 
     private Map<TopicPartition, OffsetSpec> createPartitionLatestOffsetMap(final Map<TopicPartition, OffsetAndMetadata> groupOffsets) {
