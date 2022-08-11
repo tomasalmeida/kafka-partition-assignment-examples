@@ -23,7 +23,7 @@ while [ "$CREATE_TOPIC" != "n" ]; do
       ALL_TOPICS+=($TOPIC_NAME)
       kafka-topics --bootstrap-server localhost:29092 --create --topic $TOPIC_NAME --partitions $PARTITIONS --replication-factor 1
       echo "Adding initial data..."
-      kafka-producer-perf-test --topic $TOPIC_NAME --num-records 600000 --record-size 100 --throughput 10000 --producer-props bootstrap.servers=localhost:29092
+      # kafka-producer-perf-test --topic $TOPIC_NAME --num-records 600000 --record-size 100 --throughput 10000 --producer-props bootstrap.servers=localhost:29092
       let TOPIC++
     fi
   fi
@@ -33,7 +33,7 @@ echo "all topics = $ALL_TOPICS"
 
 cd tooling
 mvn clean package
-java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar partitioning.tool.kafka.producer.ProducerStarter config.properties 10 "$ALL_TOPICS"
+# java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar partitioning.tool.kafka.producer.ProducerStarter config.properties 10 "$ALL_TOPICS"
 
 echo "***********************************"
 echo "* REMEMBER TO DESTROY THE CLUSTER *"
