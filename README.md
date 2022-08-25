@@ -104,28 +104,35 @@ Strategies can be:
 
 Example:
 
-     ./launch-consumer.sh range 3 r3 true
-     consumer-0 launched [16568]
-     consumer-1 launched [16569]
-     consumer-2 launched [16570]
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: a
-     consumer-3 launched [16573]
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: a
-     consumer-4 launched [16574]
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: k
-     Give the consumer number you want to kill:  2
-     Consumer 2 killed (pid 16570) - Date: Wed Aug 10 23:47:08 CEST 2022
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: e
-     Time to clean up!
-     Consumer 0 killed (pid 16568) - Date: Wed Aug 10 23:47:17 CEST 2022
-     Consumer 1 killed (pid 16569) - Date: Wed Aug 10 23:47:17 CEST 2022
-     No pid found for consumer 2.
-     Consumer 3 killed (pid 16573) - Date: Wed Aug 10 23:47:17 CEST 2022
-     Consumer 4 killed (pid 16574) - Date: Wed Aug 10 23:47:17 CEST 2022
+      $ ./launch-consumer.sh range 3 r3 true
+      consumer-0 launched [11137]
+      consumer-1 launched [11138]
+      consumer-2 launched [11139]
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: a
+      Give the consumer number you want to create: 3
+      consumer-3 launched [11160]
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: a
+      Give the consumer number you want to create: 4
+      consumer-4 launched [11170]
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: k
+      Give the consumer number you want to kill: 3
+      Consumer 3 killed (pid 11160) - Date: Thu Aug 25 23:31:01 CEST 2022
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: k
+      Give the consumer number you want to kill: 2
+      Consumer 2 killed (pid 11139) - Date: Thu Aug 25 23:31:16 CEST 2022
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: e
+      Time to clean up!
+      consumers 4
+      Consumer 0 killed (pid 11137) - Date: Thu Aug 25 23:31:17 CEST 2022
+      Consumer 1 killed (pid 11138) - Date: Thu Aug 25 23:31:17 CEST 2022
+      No pid found for consumer 2.
+      No pid found for consumer 3.
+      Consumer 4 killed (pid 11170) - Date: Thu Aug 25 23:31:17 CEST 2022
 
 ### Clean up
 

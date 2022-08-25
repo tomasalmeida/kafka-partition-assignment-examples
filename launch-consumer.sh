@@ -14,13 +14,18 @@ show_help() {
 
 launch_consumer() {
   ID=$1
-  INSTANCE="consumer-${ID}"
-  java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
-    partitioning.tool.kafka.consumer.ConsumerStarter \
-    config.properties $GROUP_ID \
-    $STRATEGY_CLASS $INSTANCE $SET_STATIC &>/dev/null &
-  consumers[$ID]=$!
-  echo "consumer-$ID launched [${consumers[$ID]}]"
+  PID="${consumers[ID]}"
+  if [[ PID -gt 0 ]]; then
+     echo "Consumer $ID already exists (pid $PID)"
+  else
+    INSTANCE="consumer-${ID}"
+    java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar \
+      partitioning.tool.kafka.consumer.ConsumerStarter \
+      config.properties $GROUP_ID \
+      $STRATEGY_CLASS $INSTANCE $SET_STATIC &>/dev/null &
+    consumers[$ID]=$!
+    echo "consumer-$ID launched [${consumers[$ID]}]"
+  fi
 }
 
 kill_consumer() {
@@ -72,17 +77,23 @@ done
 
 while [ "$action_letter" != "e" ]; do
   echo ""
-  echo -n "What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: "
+  echo -n "What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: "
   read -n1 action_letter
   echo ""
 
   case "$action_letter" in
   "a")
-    launch_consumer $TOTAL_CONSUMERS
-    let TOTAL_CONSUMERS++
+    echo -n "Give the consumer number you want to create: "
+    read ID
+    if [[ $ID =~ $REGEX_NUMBER ]]; then
+      launch_consumer $ID
+      TOTAL_CONSUMERS=$((TOTAL_CONSUMERS < ID ? ID : TOTAL_CONSUMERS))
+    else
+      echo "Not a number to me :-("
+    fi
     ;;
   "k")
-    echo -n "Give the consumer number you want to kill:  "
+    echo -n "Give the consumer number you want to kill: "
     read ID
     if [[ $ID =~ $REGEX_NUMBER ]]; then
       kill_consumer $ID
@@ -99,7 +110,7 @@ while [ "$action_letter" != "e" ]; do
   esac
 
 done
-
-for ((i = 0; i < TOTAL_CONSUMERS; i++)); do
+echo "consumers $TOTAL_CONSUMERS "
+for ((i = 0; i <= TOTAL_CONSUMERS; i++)); do
   kill_consumer $i
 done
