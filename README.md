@@ -53,40 +53,32 @@ In another terminal, check the status
 
 Example:
 
-      ./status.sh beta1
+      ./status.sh g2
+      Date: 2022-08-25T23:39:24.017862 - consumerGroup: g2
 
-      Date: 2022-08-07T12:19:24.260758 - consumerGroup: beta1
-
-      Topic             Partition   currentOffset   endOffset        Client Id	instanceId
-      topic-0           0           82552           115740           DOG-sssss	consumer-0
-      topic-0           1           82734           123495           DOG-sssss	consumer-0
-      topic-0           2           82829           124778           DOG-sssss	consumer-0
-      topic-0           3           83019           132598           DOG-sssss	consumer-0
-      topic-0           4           82159           104783           DOG-sssss	consumer-0
-      topic-1           0           90748           102191           DOG-sssss	consumer-0
-      topic-1           1           82012           111033           DOG-sssss	consumer-0
-      topic-1           2           91547           121748           DOG-sssss	consumer-0
-      topic-1           3           64296           130536           DOG-sssss	consumer-0
-      topic-1           4           60149           135886           DOG-lllll	consumer-1
-      topic-2           0           45272           101025           DOG-sssss	consumer-0
-      topic-2           1           44761           111701           DOG-lllll	consumer-1
-      topic-2           2           54954           121007           DOG-sssss	consumer-0
-      topic-2           3           73511           130747           DOG-lllll	consumer-1
-      topic-2           4           73653           136913           DOG-lllll	consumer-1
-      topic-3           0           72045           95246            DOG-lllll	consumer-1
-      topic-3           1           72594           107364           DOG-lllll	consumer-1
-      topic-3           2           73044           121535           DOG-lllll	consumer-1
-      topic-3           3           73271           132366           DOG-lllll	consumer-1
-      topic-3           4           73589           144882           DOG-lllll	consumer-1
-      topic-4           0           72036           95205            DOG-lllll	consumer-1
-      topic-4           1           72662           110642           DOG-lllll	consumer-1
-      topic-4           2           36530           119117           DOG-lllll	consumer-1
-      topic-4           3           36726           132765           DOG-sssss	consumer-0
-      topic-4           4           36807           143664           DOG-lllll	consumer-1
+      Topic     Partition   currentOffset   end Offset   Client Id      instanceId
+      topic-0        0             27110       114036    consumer-0     consumer-0
+      topic-0        1             27703       121839    consumer-1     consumer-1
+      topic-0        2             27766       127915    consumer-2     consumer-2
+      topic-0        3             27759       132468    consumer-3     consumer-3
+      topic-0        4             18281       103742    consumer-4     consumer-4
+      topic-1        0             20061        45374    consumer-0     consumer-0
+      topic-1        1             18033        50980    consumer-0     consumer-0
+      topic-1        2             18071        52326    consumer-1     consumer-1
+      topic-1        3             19474        56567    consumer-1     consumer-1
+      topic-1        4             19761        58721    consumer-2     consumer-2
+      topic-1        5             18249        60598    consumer-2     consumer-2
+      topic-1        6             18294        63834    consumer-3     consumer-3
+      topic-1        7             19219        69336    consumer-3     consumer-3
+      topic-1        8             22302        69547    consumer-4     consumer-4
+      topic-1        9             18417        72717    consumer-4     consumer-4
       
-      CLIENT           PARTITIONS
-      DOG-lllll        topic-1(4) topic-2(1,3,4) topic-3(0,1,2,3,4) topic-4(0,1,2,4)
-      DOG-sssss        topic-0(0,1,2,3,4) topic-1(0,1,2,3) topic-2(0,2) topic-4(3)
+      CLIENT		PARTITIONS
+      consumer-0	topic-0(0) topic-1(0,1)
+      consumer-1	topic-0(1) topic-1(2,3)
+      consumer-2	topic-0(2) topic-1(4,5)
+      consumer-3	topic-0(3) topic-1(6,7)
+      consumer-4	topic-0(4) topic-1(8,9)
 
 ### 3. Consumers
 
@@ -104,28 +96,35 @@ Strategies can be:
 
 Example:
 
-     ./launch-consumer.sh range 3 r3 true
-     consumer-0 launched [16568]
-     consumer-1 launched [16569]
-     consumer-2 launched [16570]
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: a
-     consumer-3 launched [16573]
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: a
-     consumer-4 launched [16574]
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: k
-     Give the consumer number you want to kill:  2
-     Consumer 2 killed (pid 16570) - Date: Wed Aug 10 23:47:08 CEST 2022
-
-     What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: e
-     Time to clean up!
-     Consumer 0 killed (pid 16568) - Date: Wed Aug 10 23:47:17 CEST 2022
-     Consumer 1 killed (pid 16569) - Date: Wed Aug 10 23:47:17 CEST 2022
-     No pid found for consumer 2.
-     Consumer 3 killed (pid 16573) - Date: Wed Aug 10 23:47:17 CEST 2022
-     Consumer 4 killed (pid 16574) - Date: Wed Aug 10 23:47:17 CEST 2022
+      $ ./launch-consumer.sh range 3 r3 true
+      consumer-0 launched [11137]
+      consumer-1 launched [11138]
+      consumer-2 launched [11139]
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: a
+      Give the consumer number you want to create: 3
+      consumer-3 launched [11160]
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: a
+      Give the consumer number you want to create: 4
+      consumer-4 launched [11170]
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: k
+      Give the consumer number you want to kill: 3
+      Consumer 3 killed (pid 11160) - Date: Thu Aug 25 23:31:01 CEST 2022
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: k
+      Give the consumer number you want to kill: 2
+      Consumer 2 killed (pid 11139) - Date: Thu Aug 25 23:31:16 CEST 2022
+      
+      What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: e
+      Time to clean up!
+      consumers 4
+      Consumer 0 killed (pid 11137) - Date: Thu Aug 25 23:31:17 CEST 2022
+      Consumer 1 killed (pid 11138) - Date: Thu Aug 25 23:31:17 CEST 2022
+      No pid found for consumer 2.
+      No pid found for consumer 3.
+      Consumer 4 killed (pid 11170) - Date: Thu Aug 25 23:31:17 CEST 2022
 
 ### Clean up
 

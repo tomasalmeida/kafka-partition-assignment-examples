@@ -5,6 +5,11 @@ TOPIC_PREFIX=topic
 docker-compose down -v
 docker-compose up -d
 
+#
+cd tooling
+mvn clean package
+cd ..
+
 ALL_TOPICS=()
 TOPIC=0
 while [ "$CREATE_TOPIC" != "n" ]; do
@@ -32,7 +37,6 @@ ALL_TOPICS=$(echo ${ALL_TOPICS[@]} | tr ' ' ',')
 echo "all topics = $ALL_TOPICS"
 
 cd tooling
-mvn clean package
 java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar partitioning.tool.kafka.producer.ProducerStarter config.properties 10 "$ALL_TOPICS"
 
 echo "***********************************"
