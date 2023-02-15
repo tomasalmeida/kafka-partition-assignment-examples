@@ -9,6 +9,11 @@ cd ..
 docker-compose down -v
 docker-compose up -d
 
+#
+cd tooling
+mvn clean package
+cd ..
+
 ALL_TOPICS=()
 TOPIC=0
 while [ "$CREATE_TOPIC" != "n" ]; do
