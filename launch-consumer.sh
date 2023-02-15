@@ -72,7 +72,7 @@ done
 
 while [ "$action_letter" != "e" ]; do
   echo ""
-  echo -n "What's next? [a] Add new consumer, [k] kill last consumer, [e] exit: "
+  echo -n "What's next? [a] Add new consumer, [k] kill a consumer, [e] exit: "
   read -n1 action_letter
   echo ""
 

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 TOPIC_PREFIX=topic
 
+cd tooling
+mvn clean package
+cd ..
+
 # start cluster
 docker-compose down -v
 docker-compose up -d
@@ -32,7 +36,6 @@ ALL_TOPICS=$(echo ${ALL_TOPICS[@]} | tr ' ' ',')
 echo "all topics = $ALL_TOPICS"
 
 cd tooling
-mvn clean package
 java -cp target/partitioning-tool-1.0.0-SNAPSHOT-jar-with-dependencies.jar partitioning.tool.kafka.producer.ProducerStarter config.properties 10 "$ALL_TOPICS"
 
 echo "***********************************"
