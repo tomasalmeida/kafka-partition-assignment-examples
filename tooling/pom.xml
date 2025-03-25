@@ -12,7 +12,7 @@
 
 
     <properties>
-        <kafka.version>3.2.1</kafka.version>
+        <kafka.version>3.5.2</kafka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>11</java.version>
         <slf4j-api.version>1.7.36</slf4j-api.version>

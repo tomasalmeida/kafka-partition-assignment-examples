@@ -58,6 +58,9 @@ case "$1" in
 "coop")
   STRATEGY_CLASS="org.apache.kafka.clients.consumer.CooperativeStickyAssignor"
   ;;
+"stream")
+  STRATEGY_CLASS="org.apache.kafka.streams.processor.internals.CooperativeStickyAssignor"
+  ;;
 *)
   echo "Strategy not recognised"
   exit 1
