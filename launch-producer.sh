@@ -15,6 +15,8 @@ mvn clean package
 cd ..
 
 ALL_TOPICS=()
+KAFKA_EXEC="docker compose exec -T broker"
+BOOTSTRAP_SERVER="broker:9092"
 TOPIC=0
 while [ "$CREATE_TOPIC" != "n" ]; do
   echo ""
@@ -30,9 +32,9 @@ while [ "$CREATE_TOPIC" != "n" ]; do
     else
       TOPIC_NAME="$TOPIC_PREFIX-$TOPIC"
       ALL_TOPICS+=($TOPIC_NAME)
-      kafka-topics --bootstrap-server localhost:29092 --create --topic $TOPIC_NAME --partitions $PARTITIONS --replication-factor 1
+      $KAFKA_EXEC kafka-topics --bootstrap-server $BOOTSTRAP_SERVER --create --topic $TOPIC_NAME --partitions $PARTITIONS --replication-factor 1
       echo "Adding initial data..."
-      kafka-producer-perf-test --topic $TOPIC_NAME --num-records 600000 --record-size 100 --throughput 10000 --producer-props bootstrap.servers=localhost:29092
+      $KAFKA_EXEC kafka-producer-perf-test --topic $TOPIC_NAME --num-records 1000 --record-size 100 --throughput 10000 --producer-props bootstrap.servers=$BOOTSTRAP_SERVER
       let TOPIC++
     fi
   fi
